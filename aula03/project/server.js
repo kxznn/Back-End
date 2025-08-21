@@ -6,9 +6,11 @@ const port = 3003;
 
 
 app.use(express.json());
+
 app.get('/', (req,res) => {
     res.send('Seja Bem-vindo a minha API :) ');
 });
+
 app.listen(port, () => {
     console.log(`Servidor esta sendo rodado na porta ${port}`);
 })
