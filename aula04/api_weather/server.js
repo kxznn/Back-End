@@ -1,38 +1,68 @@
-const express = require('express'); // importa a biblioteca express
-const cors = require("cors"); // importa a biblioteca cors para permitir acesso externo
-const axios = require('axios'); // importa  a biblioteca axios
-// require('dotenv').config(); 
-const app = express(); 
-const PORT = 3000; 
+const express = require('express');
+const cors = require("cors");
+const axios = require('axios');
+//require('dotenv').config(); 
+const app = express();
+const PORT = 3000;
 const apiKey = '46feaf2d6f46008600418771836b4450'
-// process.env.OPENWEATHER_API_KEY; // pega a variavel da chave da api no .env
+//process.env.OPENWEATHER_API_KEY; 
 
-app.use(cors()); // permite acesso externo a api
+app.use(cors());
 
-app.get('/weather',async(req,res)=>{
-    const{city,country } = req.query;  // armazena a cidade e o pais quando faz a requisiçao
-    if(!city || !country){
-        return res.status(400).json({error:'Informe a cidade e o pais'});
+app.get('/weather', async (req, res) => {
+    const { city, country } = req.query;
+    if (!city || !country) {
+        return res.status(400).json({ error: 'Informe a cidade e o pais' });
     }
     try {
         const response = await axios.get(`https://api.openweathermap.org/data/2.5/weather?q=${city},${country}&APPID=${apiKey}&units=metric&lang=pt_br`);
 
         const data = response.data;
-        const temperature = data.main?.temp ??0;
-        const humidity = data.main?.humidity ??0;
-        const windSpeed = data.windSpeed? data.wind.speed *3.6 :0;
-        const rainChance = data.rain?.['1h'] ?? 0;
-        const weatherCondition = data.weatherCondition?.[0]?.description ?? 'Desconhecido';
+        const temperature = data.main?.temp ?? 0;
+        const humidity = data.main?.humidity ?? 0;
+        const windSpeed = data.wind?.speed ? data.wind.speed * 3.6 : 0;
+        const rainChance = data.rain?.['24h'] ?? 0;
+        const weatherCondition = data.weather?.[0]?.description ?? 'Desconhecido';
 
-        res.json({temperature,humidity,windSpeed,rainChance,weatherCondition});
-    
-    }catch(err){
-        if(err.response?.status==404){
-            return res.status(404).json({error:'Cidade não encontrada'});
+        res.json({ temperature, humidity, windSpeed, rainChance, weatherCondition });
+
+    } catch (err) {
+        if (err.response?.status == 404) {
+            return res.status(404).json({ error: 'Cidade não encontrada' });
         }
-        res.status(500).json({error:'Erro ao obter dados do clima'});
+        res.status(500).json({ error: 'Erro ao obter dados do clima' });
     }
 
 });
+app.get('/multiple', async (req, res) => {
+    const { cities } = req.query;
 
-app.listen(PORT,()=>console.log(`Servidor rodando em http://localhost:${PORT}/`));
+    if (!cities) {
+        return res.status(400).json({ error: 'Informe pelo menos cidade.' });
+    }
+
+    const cityList = cities.split(',');
+    const results = [];
+
+    try {
+        for (let city of cityList) {
+            const response = await axios.get(
+                `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric&lang=pt_br`
+            );
+
+            results.push({
+                city,
+                temperature: response.data.main?.temp ?? 0,
+                weather: response.data.weather?.[0]?.description ?? 'Desconhecido'
+            });
+        }
+
+        res.json(results);
+
+    } catch (err) {
+        res.status(500).json({ error: 'Erro ao consultar API para múltiplas cidades.' })
+    }
+});
+
+
+app.listen(PORT, () => console.log(`Servidor rodando em http://localhost:${PORT}/`));
