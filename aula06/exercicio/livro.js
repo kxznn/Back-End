@@ -20,7 +20,7 @@
 // meuLivroFav.idadePublicacao = anoAtual - meuLivroFav.anoPublicacao;
 
 // const mostrarDetalhes = `
-// Detalhes do Livro:
+// Detalhes do livro:
 // -------------------
 
 // Título: ${meuLivroFav.titulo}
