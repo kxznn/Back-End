@@ -1,4 +1,4 @@
-class Pessoa {
+    class Pessoa {
     constructor (){
         this.nome = null;
         this.idade = null;
