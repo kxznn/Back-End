@@ -25,7 +25,17 @@ router.get('/', async (req, res) => {
     try {
         const { titulo } = req.query;
         if (!titulo) {
-            return res.status(400)
+            return res.status(400).json({ message: ' Parâmetro de busca "titulo" é obrigatório ' });
         }
+
+        const regex = new RegExp(titulo, 'i');
+        const books = await Book.find({ titulo: { $regex: regex } });
+
+        return res.status(200).json(books);
+    } catch (error) {
+        return res.status(500).json({ message: ' Erro ao buscar livro', error: error.message})
     }
-}
+});
+
+
+router.delete('/:id', async (req))
